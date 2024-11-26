@@ -77,6 +77,7 @@ public class AzureBlobLeaseDistributedLockTest
         var wrapper = new BlobClientWrapper(client);
 
         var metadata = new Dictionary<string, string> { ["abc"] = "123" };
+        var newmetadata = new Dictionary<string, string> { ["abc"] = "456" };
 
         if (client.GetType() == typeof(BlobBaseClient))
         {
@@ -87,12 +88,14 @@ public class AzureBlobLeaseDistributedLockTest
             return;
         }
 
-        await wrapper.CreateIfNotExistsAsync(metadata, CancellationToken.None);
+        var created = await wrapper.CreateIfNotExistsAsync(metadata, CancellationToken.None);
+        Assert.That(created, Is.True);
         Assert.That((await client.ExistsAsync()).Value, Is.True);
         Assert.That((await client.GetPropertiesAsync()).Value.Metadata, Is.EqualTo(metadata).AsCollection);
-
-        Assert.DoesNotThrowAsync(async () => await wrapper.CreateIfNotExistsAsync(metadata, CancellationToken.None));
+        created = await wrapper.CreateIfNotExistsAsync(newmetadata, CancellationToken.None);
+        Assert.That((await client.GetPropertiesAsync()).Value.Metadata, Is.EqualTo(metadata).AsCollection);
         Assert.That((await client.ExistsAsync()).Value, Is.True);
+        Assert.That(created, Is.False);
     }
 
     [Test]

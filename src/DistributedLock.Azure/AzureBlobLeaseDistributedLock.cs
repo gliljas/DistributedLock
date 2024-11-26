@@ -105,46 +105,47 @@ public sealed partial class AzureBlobLeaseDistributedLock : IInternalDistributed
         );
 
     private async ValueTask<AzureBlobLeaseDistributedLockHandle?> TryAcquireAsync(
-        BlobLeaseClientWrapper leaseClient, 
+        BlobLeaseClientWrapper leaseClient,
         CancellationToken cancellationToken,
         bool isRetryAfterCreate)
     {
-        try  { await leaseClient.AcquireAsync(this._options.duration, cancellationToken).ConfigureAwait(false); }
-        catch (RequestFailedException acquireException)
+        try { await leaseClient.AcquireAsync(this._options.duration, cancellationToken).ConfigureAwait(false); }
+        catch (RequestFailedException acquireException) when (acquireException.ErrorCode == AzureErrors.LeaseAlreadyPresent)
         {
-            if (acquireException.ErrorCode == AzureErrors.LeaseAlreadyPresent) { return null; }
+            return null;
+        }
+        catch (RequestFailedException acquireException) when (acquireException.ErrorCode == AzureErrors.BlobNotFound)
+        {
+            // if we just created and it already doesn't exist again, just return null and retry later
+            if (isRetryAfterCreate) { return null; }
 
-            if (acquireException.ErrorCode == AzureErrors.BlobNotFound)
+            //early exit
+            cancellationToken.ThrowIfCancellationRequested();
+            // create the blob
+            var metadata = new Dictionary<string, string> { [CreatedMetadataKey] = DateTime.UtcNow.ToString("o") }; // date value is just for debugging
+            bool blobCreated;
+            try
             {
-                // if we just created and it already doesn't exist again, just return null and retry later
-                if (isRetryAfterCreate) { return null; }
-
-                // create the blob
-                var metadata = new Dictionary<string, string> { [CreatedMetadataKey] = DateTime.UtcNow.ToString("o") }; // date value is just for debugging
-                try { await this._blobClient.CreateIfNotExistsAsync(metadata, cancellationToken).ConfigureAwait(false); }
-                catch (RequestFailedException createException)
-                {
-                    // handle the race condition where we try to create and someone else creates it first
-                    return createException.ErrorCode == AzureErrors.LeaseIdMissing
-                        ? default(AzureBlobLeaseDistributedLockHandle?)
-                        : throw new AggregateException($"Blob {this._blobClient.Name} does not exist and could not be created. See inner exceptions for details", acquireException, createException);
-                }
-
-                try { return await this.TryAcquireAsync(leaseClient, cancellationToken, isRetryAfterCreate: true).ConfigureAwait(false); }
-                catch (Exception retryException)
-                {
-                    // if the retry fails and we created, attempt deletion to clean things up
-                    try { await this._blobClient.DeleteIfExistsAsync().ConfigureAwait(false); }
-                    catch (Exception deletionException)
-                    {
-                        throw new AggregateException(retryException, deletionException);
-                    }
-
-                    throw;
-                }
+                blobCreated = await this._blobClient.CreateIfNotExistsAsync(metadata, cancellationToken).ConfigureAwait(false);
+            }
+            catch (RequestFailedException createException)
+            {
+                // handle the race condition where we try to create and someone else creates it first
+                return createException.ErrorCode == AzureErrors.LeaseIdMissing
+                    ? default(AzureBlobLeaseDistributedLockHandle?)
+                    : throw new AggregateException($"Blob {this._blobClient.Name} does not exist and could not be created. See inner exceptions for details", acquireException, createException);
             }
 
-            throw;
+            try { return await this.TryAcquireAsync(leaseClient, cancellationToken, isRetryAfterCreate: true).ConfigureAwait(false); }
+            catch (Exception retryException) when (blobCreated)
+            {
+                // if the retry fails and we created, attempt deletion to clean things up
+                try { await this._blobClient.DeleteIfExistsAsync().ConfigureAwait(false); }
+                catch (Exception deletionException)
+                {
+                    throw new AggregateException(retryException, deletionException);
+                }
+            }
         }
 
         var shouldDeleteBlob = isRetryAfterCreate
@@ -160,7 +161,7 @@ public sealed partial class AzureBlobLeaseDistributedLock : IInternalDistributed
         private readonly bool _ownsBlob;
         private readonly AzureBlobLeaseDistributedLock _lock;
         private readonly LeaseMonitor _leaseMonitor;
-        
+
         public InternalHandle(BlobLeaseClientWrapper leaseClient, bool ownsBlob, AzureBlobLeaseDistributedLock @lock)
         {
             this._leaseClient = leaseClient;
@@ -193,7 +194,7 @@ public sealed partial class AzureBlobLeaseDistributedLock : IInternalDistributed
             {
                 await this._lock._blobClient.DeleteIfExistsAsync(leaseId: this._leaseClient.LeaseId).ConfigureAwait(false);
             }
-            else 
+            else
             {
                 await this._leaseClient.ReleaseAsync().ConfigureAwait(false);
             }

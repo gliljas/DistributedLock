@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Medallion.Threading.Internal;
@@ -11,6 +12,8 @@ namespace Medallion.Threading.Azure;
 internal class BlobClientWrapper
 {
     private readonly BlobBaseClient _blobClient;
+    private static readonly BlobRequestConditions IfNoneMatchAll = new BlobRequestConditions { IfNoneMatch = ETag.All };
+
 
     public BlobClientWrapper(BlobBaseClient blobClient)
     {
@@ -30,38 +33,56 @@ internal class BlobClientWrapper
         return properties.Value.Metadata;
     }
 
-    public ValueTask CreateIfNotExistsAsync(IDictionary<string, string> metadata, CancellationToken cancellationToken)
+    public async ValueTask<bool> CreateIfNotExistsAsync(IDictionary<string, string> metadata, CancellationToken cancellationToken)
     {
         switch (this._blobClient)
         {
             case BlobClient blobClient:
-                if (SyncViaAsync.IsSynchronous)
+                try
                 {
-                    blobClient.Upload(Stream.Null, metadata: metadata, cancellationToken: cancellationToken);
-                    return default;
+                    if (SyncViaAsync.IsSynchronous)
+                    {
+                        blobClient.Upload(Stream.Null, metadata: metadata, conditions: IfNoneMatchAll, cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        await blobClient.UploadAsync(Stream.Null, metadata: metadata, conditions: IfNoneMatchAll, cancellationToken: cancellationToken);
+                    }
+                    return true;
                 }
-                return new ValueTask(blobClient.UploadAsync(Stream.Null, metadata: metadata, cancellationToken: cancellationToken));
+                catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
+                {
+                    return false;
+                }
             case BlockBlobClient blockBlobClient:
-                if (SyncViaAsync.IsSynchronous)
+                try
                 {
-                    blockBlobClient.Upload(Stream.Null, metadata: metadata, cancellationToken: cancellationToken);
-                    return default;
+                    if (SyncViaAsync.IsSynchronous)
+                    {
+                        blockBlobClient.Upload(Stream.Null, metadata: metadata, conditions: IfNoneMatchAll, cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        await blockBlobClient.UploadAsync(Stream.Null, metadata: metadata, conditions: IfNoneMatchAll, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }
+                    return true;
                 }
-                return new ValueTask(blockBlobClient.UploadAsync(Stream.Null, metadata: metadata, cancellationToken: cancellationToken));
+                catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
+                {
+                    return false;
+                }
             case PageBlobClient pageBlobClient:
                 if (SyncViaAsync.IsSynchronous)
                 {
-                    pageBlobClient.CreateIfNotExists(size: 0, metadata: metadata, cancellationToken: cancellationToken);
-                    return default;
+                    return pageBlobClient.CreateIfNotExists(size: 0, metadata: metadata, cancellationToken: cancellationToken) != null;
                 }
-                return new ValueTask(pageBlobClient.CreateIfNotExistsAsync(size: 0, metadata: metadata, cancellationToken: cancellationToken));
+                return (await pageBlobClient.CreateIfNotExistsAsync(size: 0, metadata: metadata, cancellationToken: cancellationToken).ConfigureAwait(false)) != null;
             case AppendBlobClient appendBlobClient:
                 if (SyncViaAsync.IsSynchronous)
                 {
-                    appendBlobClient.CreateIfNotExists(metadata: metadata, cancellationToken: cancellationToken);
-                    return default;
+                    return appendBlobClient.CreateIfNotExists(metadata: metadata, cancellationToken: cancellationToken) != null;
                 }
-                return new ValueTask(appendBlobClient.CreateIfNotExistsAsync(metadata: metadata, cancellationToken: cancellationToken));
+                return (await appendBlobClient.CreateIfNotExistsAsync(metadata: metadata, cancellationToken: cancellationToken).ConfigureAwait(false)) != null;
             default:
                 throw new InvalidOperationException(
                     this._blobClient.GetType() == typeof(BlobBaseClient)
