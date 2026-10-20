@@ -130,7 +130,7 @@ public class GenerateProviders
                                 /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
                                 /// </param>
                             {cancellationTokenParamDoc}
-                                public static {m.Groups["returnType"].Value} {extensionMethodName}(this {providerInterfaceName} provider, IReadOnlyList<string> names{(isSemaphore ? ", int maxCount" : string.Empty)}, {timeoutType} timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+                                public static {m.Groups["returnType"].Value} {extensionMethodName}(this {providerInterfaceName} provider, IReadOnlyList<string> names{(isSemaphore ? ", int maxCount" : string.Empty)}, {timeoutType} timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
                                     {(
                                         isAsync
                                             ? $"provider.{internalMethodName}(names, {MaxCountArg()}timeout, observeLockLostToken, cancellationToken).{getHandleMethodName}();"

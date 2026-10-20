@@ -95,7 +95,7 @@ public static class DistributedReaderWriterLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static IDistributedSynchronizationHandle? TryAcquireAllReadLocks(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static IDistributedSynchronizationHandle? TryAcquireAllReadLocks(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         SyncViaAsync.Run(static s => s.provider.TryAcquireAllReadLocksAsync(s.names, s.timeout, s.observeLockLostToken, s.cancellationToken), (provider, names, timeout, observeLockLostToken, cancellationToken));
 
     /// <summary>
@@ -122,7 +122,7 @@ public static class DistributedReaderWriterLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static IDistributedSynchronizationHandle AcquireAllReadLocks(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static IDistributedSynchronizationHandle AcquireAllReadLocks(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         SyncViaAsync.Run(static s => s.provider.AcquireAllReadLocksAsync(s.names, s.timeout, s.observeLockLostToken, s.cancellationToken), (provider, names, timeout, observeLockLostToken, cancellationToken));
 
     /// <summary>
@@ -149,7 +149,7 @@ public static class DistributedReaderWriterLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static ValueTask<IDistributedSynchronizationHandle?> TryAcquireAllReadLocksAsync(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static ValueTask<IDistributedSynchronizationHandle?> TryAcquireAllReadLocksAsync(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         provider.TryAcquireAllReadLocksInternalAsync(names, timeout, observeLockLostToken, cancellationToken).GetHandleOrDefault();
 
     /// <summary>
@@ -176,7 +176,7 @@ public static class DistributedReaderWriterLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static ValueTask<IDistributedSynchronizationHandle> AcquireAllReadLocksAsync(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static ValueTask<IDistributedSynchronizationHandle> AcquireAllReadLocksAsync(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         provider.TryAcquireAllReadLocksInternalAsync(names, timeout, observeLockLostToken, cancellationToken).GetHandleOrTimeout();
 
     /// <summary>
@@ -203,7 +203,7 @@ public static class DistributedReaderWriterLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static IDistributedSynchronizationHandle? TryAcquireAllWriteLocks(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static IDistributedSynchronizationHandle? TryAcquireAllWriteLocks(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         SyncViaAsync.Run(static s => s.provider.TryAcquireAllWriteLocksAsync(s.names, s.timeout, s.observeLockLostToken, s.cancellationToken), (provider, names, timeout, observeLockLostToken, cancellationToken));
 
     /// <summary>
@@ -230,7 +230,7 @@ public static class DistributedReaderWriterLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static IDistributedSynchronizationHandle AcquireAllWriteLocks(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static IDistributedSynchronizationHandle AcquireAllWriteLocks(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         SyncViaAsync.Run(static s => s.provider.AcquireAllWriteLocksAsync(s.names, s.timeout, s.observeLockLostToken, s.cancellationToken), (provider, names, timeout, observeLockLostToken, cancellationToken));
 
     /// <summary>
@@ -257,7 +257,7 @@ public static class DistributedReaderWriterLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static ValueTask<IDistributedSynchronizationHandle?> TryAcquireAllWriteLocksAsync(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static ValueTask<IDistributedSynchronizationHandle?> TryAcquireAllWriteLocksAsync(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         provider.TryAcquireAllWriteLocksInternalAsync(names, timeout, observeLockLostToken, cancellationToken).GetHandleOrDefault();
 
     /// <summary>
@@ -284,7 +284,7 @@ public static class DistributedReaderWriterLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static ValueTask<IDistributedSynchronizationHandle> AcquireAllWriteLocksAsync(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static ValueTask<IDistributedSynchronizationHandle> AcquireAllWriteLocksAsync(this IDistributedReaderWriterLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         provider.TryAcquireAllWriteLocksInternalAsync(names, timeout, observeLockLostToken, cancellationToken).GetHandleOrTimeout();
 
     # endregion

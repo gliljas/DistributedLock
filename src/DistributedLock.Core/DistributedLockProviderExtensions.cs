@@ -67,7 +67,7 @@ public static class DistributedLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static IDistributedSynchronizationHandle? TryAcquireAllLocks(this IDistributedLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static IDistributedSynchronizationHandle? TryAcquireAllLocks(this IDistributedLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         SyncViaAsync.Run(static s => s.provider.TryAcquireAllLocksAsync(s.names, s.timeout, s.observeLockLostToken, s.cancellationToken), (provider, names, timeout, observeLockLostToken, cancellationToken));
 
     /// <summary>
@@ -94,7 +94,7 @@ public static class DistributedLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static IDistributedSynchronizationHandle AcquireAllLocks(this IDistributedLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static IDistributedSynchronizationHandle AcquireAllLocks(this IDistributedLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         SyncViaAsync.Run(static s => s.provider.AcquireAllLocksAsync(s.names, s.timeout, s.observeLockLostToken, s.cancellationToken), (provider, names, timeout, observeLockLostToken, cancellationToken));
 
     /// <summary>
@@ -121,7 +121,7 @@ public static class DistributedLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static ValueTask<IDistributedSynchronizationHandle?> TryAcquireAllLocksAsync(this IDistributedLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static ValueTask<IDistributedSynchronizationHandle?> TryAcquireAllLocksAsync(this IDistributedLockProvider provider, IReadOnlyList<string> names, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         provider.TryAcquireAllLocksInternalAsync(names, timeout, observeLockLostToken, cancellationToken).GetHandleOrDefault();
 
     /// <summary>
@@ -148,7 +148,7 @@ public static class DistributedLockProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static ValueTask<IDistributedSynchronizationHandle> AcquireAllLocksAsync(this IDistributedLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static ValueTask<IDistributedSynchronizationHandle> AcquireAllLocksAsync(this IDistributedLockProvider provider, IReadOnlyList<string> names, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         provider.TryAcquireAllLocksInternalAsync(names, timeout, observeLockLostToken, cancellationToken).GetHandleOrTimeout();
 
     # endregion

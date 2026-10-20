@@ -69,7 +69,7 @@ public static class DistributedSemaphoreProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static IDistributedSynchronizationHandle? TryAcquireAllSemaphores(this IDistributedSemaphoreProvider provider, IReadOnlyList<string> names, int maxCount, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static IDistributedSynchronizationHandle? TryAcquireAllSemaphores(this IDistributedSemaphoreProvider provider, IReadOnlyList<string> names, int maxCount, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         SyncViaAsync.Run(static s => s.provider.TryAcquireAllSemaphoresAsync(s.names, s.maxCount, s.timeout, s.observeLockLostToken, s.cancellationToken), (provider, names, maxCount, timeout, observeLockLostToken, cancellationToken));
 
     /// <summary>
@@ -98,7 +98,7 @@ public static class DistributedSemaphoreProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static IDistributedSynchronizationHandle AcquireAllSemaphores(this IDistributedSemaphoreProvider provider, IReadOnlyList<string> names, int maxCount, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static IDistributedSynchronizationHandle AcquireAllSemaphores(this IDistributedSemaphoreProvider provider, IReadOnlyList<string> names, int maxCount, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         SyncViaAsync.Run(static s => s.provider.AcquireAllSemaphoresAsync(s.names, s.maxCount, s.timeout, s.observeLockLostToken, s.cancellationToken), (provider, names, maxCount, timeout, observeLockLostToken, cancellationToken));
 
     /// <summary>
@@ -127,7 +127,7 @@ public static class DistributedSemaphoreProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static ValueTask<IDistributedSynchronizationHandle?> TryAcquireAllSemaphoresAsync(this IDistributedSemaphoreProvider provider, IReadOnlyList<string> names, int maxCount, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static ValueTask<IDistributedSynchronizationHandle?> TryAcquireAllSemaphoresAsync(this IDistributedSemaphoreProvider provider, IReadOnlyList<string> names, int maxCount, TimeSpan timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         provider.TryAcquireAllSemaphoresInternalAsync(names, maxCount, timeout, observeLockLostToken, cancellationToken).GetHandleOrDefault();
 
     /// <summary>
@@ -156,7 +156,7 @@ public static class DistributedSemaphoreProviderExtensions
     /// Has no effect when only one name is given. Note that accessing the token may start background monitoring for some providers.
     /// </param>
     /// <param name="cancellationToken">Specifies a token by which the wait can be canceled.</param>
-    public static ValueTask<IDistributedSynchronizationHandle> AcquireAllSemaphoresAsync(this IDistributedSemaphoreProvider provider, IReadOnlyList<string> names, int maxCount, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken = default) =>
+    public static ValueTask<IDistributedSynchronizationHandle> AcquireAllSemaphoresAsync(this IDistributedSemaphoreProvider provider, IReadOnlyList<string> names, int maxCount, TimeSpan? timeout, bool observeLockLostToken, CancellationToken cancellationToken) =>
         provider.TryAcquireAllSemaphoresInternalAsync(names, maxCount, timeout, observeLockLostToken, cancellationToken).GetHandleOrTimeout();
 
     # endregion
